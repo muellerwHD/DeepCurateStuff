@@ -9,6 +9,8 @@
 import json
 from urllib.request import urlopen
 
+import xmltodict
+
 # FIXME two types of request libraries.
 # works for the moment, needs to be changed.
 import requests
@@ -28,7 +30,7 @@ def get_json_for_pubmed_id( pubmed_id ):
         return data
     return None
 
-data = get_json_for_pubmed_id( 7437446 )
+# data = get_json_for_pubmed_id( 7437446 )
 
 
 # Heavily based on example code available at: 
@@ -82,8 +84,30 @@ def get_all_entry_ids():
 entry_ids = get_all_entry_ids();
 
 for entry_id in entry_ids:
-    j = get_sbml_for_entry_id( entry_id )
-    print(j)
 
-    time.sleep(1)
+    recount = 3
+
+    while(recount > 0):
+        try:
+            j = get_sbml_for_entry_id( entry_id )
+
+            f = open("JsonEntries/entry%06d.json" % entry_id,"w")
+
+
+            print(j)
+
+            entry = xmltodict.parse(j)
+
+            json.dump(entry,f,indent=4)
+            print(json.dumps(entry,indent=4))
+
+            f.close()
+            time.sleep(0.3)
+            # first try was successful
+            recount = 0
+        except:
+            # try again
+            recount = recount - 1
+            print("Failure, retrying after wait %d" % entry_id)
+            time.sleep(2)
 
